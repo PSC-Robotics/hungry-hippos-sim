@@ -15,7 +15,8 @@ challenge.
      ([cyberbotics/webots#6976](https://github.com/cyberbotics/webots/issues/6976)). If it
      does, install a [nightly build](https://github.com/cyberbotics/webots/releases) instead.
 2. Install [Python 3](https://www.python.org/downloads/) if you don't have it.
-3. Download this repository: **Code → Download ZIP** on GitHub, then unzip it. Or clone it:
+3. [Download the latest release](https://github.com/PSC-Robotics/hungry-hippos-sim/releases/latest/download/hungry-hippos-sim.zip)
+   and unzip it. Or clone this repository:
 
    ```bash
    git clone https://github.com/PSC-Robotics/hungry-hippos-sim.git
