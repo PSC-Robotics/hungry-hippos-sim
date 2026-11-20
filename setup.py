@@ -10,7 +10,8 @@ It:
 
 Your other Python projects aren't affected.
 
-Run it with Python 3.13: double-click it on Windows, or in a terminal in this folder run
+It needs Python 3.13. If you start it with another version, it finds Python 3.13 and uses
+that instead. Double-click it on Windows, or in a terminal in this folder run
     python3.13 setup.py        (macOS and Linux)
     py -3.13 setup.py          (Windows)
 """
@@ -18,6 +19,7 @@ from __future__ import annotations
 
 import os
 import platform
+import shutil
 import subprocess
 import sys
 import traceback
@@ -31,11 +33,44 @@ RUNTIME_INI = ROOT / "controllers" / "psc_robot" / "runtime.ini"
 
 RED, GREEN, RESET = "\x1b[31;1m", "\x1b[32m", "\x1b[0m"
 
+# The robot's packages need Python 3.13: on Windows, april_vision's camera packages
+# (winrt) have no versions for Python 3.14 yet.
+WANTED = (3, 13)
+WANTED_TEXT = "3.13"
+DOWNLOAD = "https://www.python.org/downloads/latest/python3.13/"
+
 
 def venv_python() -> Path:
     if platform.system() == "Windows":
         return VENV / "Scripts" / "python.exe"
     return VENV / "bin" / "python"
+
+
+def find_wanted_python() -> str | None:
+    """Find a Python 3.13 on this computer, or None if there isn't one."""
+    candidates: list[list[str]] = []
+    if platform.system() == "Windows":
+        candidates.append(["py", f"-{WANTED_TEXT}"])
+    for name in (f"python{WANTED_TEXT}", "python3", "python"):
+        if shutil.which(name):
+            candidates.append([shutil.which(name)])
+    for command in candidates:
+        try:
+            out = subprocess.run(
+                command + ["-c", "import sys; print(sys.version_info[:2] == "
+                                 f"{WANTED}); print(sys.executable)"],
+                capture_output=True, text=True, timeout=30)
+        except (OSError, subprocess.SubprocessError):
+            continue
+        lines = out.stdout.split()
+        if out.returncode == 0 and len(lines) >= 2 and lines[0] == "True":
+            return lines[1]
+    return None
+
+
+def pause() -> None:
+    if sys.stdin.isatty():
+        input("Press Enter to close.")
 
 
 def run(*args: str) -> None:
@@ -68,10 +103,6 @@ def main() -> None:
     if platform.system() == "Windows":
         os.system("")  # lets the Windows console show the coloured messages
     print(f"Python {platform.python_version()} on {platform.platform()}")
-    if sys.version_info[:2] != (3, 13):
-        print(f"{RED}This simulator is set up for Python 3.13, but this is Python "
-              f"{platform.python_version()}. It may still work, but if setup fails, "
-              f"install Python 3.13 and run setup.py with it.{RESET}")
 
     print(f"\nCreating the simulator's Python environment in {VENV}")
     venv.create(VENV, with_pip=True, clear=True)
@@ -91,13 +122,26 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    if sys.version_info[:2] != WANTED:
+        # Started with another Python, for example by double-clicking when a newer one is
+        # installed too: run setup again with Python 3.13 if it's on this computer.
+        if platform.system() == "Windows":
+            os.system("")
+        print(f"This is Python {platform.python_version()}, but the simulator needs "
+              f"Python {WANTED_TEXT}.")
+        wanted = find_wanted_python()
+        if wanted is None:
+            print(f"\n{RED}Python {WANTED_TEXT} isn't installed. Install it from {DOWNLOAD} "
+                  f"then run setup.py again.{RESET}")
+            pause()
+            sys.exit(1)
+        print(f"Running setup with Python {WANTED_TEXT} instead ({wanted})\n", flush=True)
+        sys.exit(subprocess.call([wanted, str(Path(__file__).resolve())]))
     try:
         main()
     except Exception:
         traceback.print_exc()
         print(f"\n{RED}Setup failed: see the error above.{RESET}")
-        if sys.stdin.isatty():
-            input("Press Enter to close.")
+        pause()
         sys.exit(1)
-    if sys.stdin.isatty():
-        input("Press Enter to close.")
+    pause()

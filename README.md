@@ -15,7 +15,8 @@ challenge.
      ([cyberbotics/webots#6976](https://github.com/cyberbotics/webots/issues/6976)). If it
      does, install a [nightly build](https://github.com/cyberbotics/webots/releases) instead.
 2. Install [Python 3.13](https://www.python.org/downloads/latest/python3.13/). On Windows, tick
-   **Add python.exe to PATH** in the installer.
+   **Add python.exe to PATH** in the installer. It must be 3.13: some of the packages the robot
+   needs don't support Python 3.14 yet. You can have other versions installed as well.
 3. [Download the latest release](https://github.com/PSC-Robotics/hungry-hippos-sim/releases/latest/download/hungry-hippos-sim.zip)
    and unzip it. Or clone this repository:
 
@@ -28,6 +29,8 @@ challenge.
    change your other Python projects.
    - **Windows:** double-click `setup.py`, or in a terminal in the folder run `py -3.13 setup.py`.
    - **macOS and Linux:** in a terminal in the folder, run `python3.13 setup.py`.
+
+   If it's started with another version of Python, it finds Python 3.13 and uses that instead.
 
    Run it again after downloading a new version, or if Webots says a module such as `cv2` or
    `april_vision` is missing.
