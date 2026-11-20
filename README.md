@@ -14,7 +14,8 @@ challenge.
    - On recent macOS versions the R2025a release can fail to start
      ([cyberbotics/webots#6976](https://github.com/cyberbotics/webots/issues/6976)). If it
      does, install a [nightly build](https://github.com/cyberbotics/webots/releases) instead.
-2. Install [Python 3](https://www.python.org/downloads/) if you don't have it.
+2. Install [Python 3.13](https://www.python.org/downloads/latest/python3.13/). On Windows, tick
+   **Add python.exe to PATH** in the installer.
 3. [Download the latest release](https://github.com/PSC-Robotics/hungry-hippos-sim/releases/latest/download/hungry-hippos-sim.zip)
    and unzip it. Or clone this repository:
 
@@ -35,8 +36,8 @@ Press play if the simulation starts paused. The robot waits for the start button
 3D view and press **S**, or wait 2 seconds and it starts by itself.
 
 If Webots says it can't find Python, set the Python command in Webots' preferences
-(**Preferences → General → Python command**) to your Python 3, for example `python3`, or
-`py -3` on Windows.
+(**Preferences → General → Python command**) to Python 3.13: `python3.13` on macOS and Linux, or
+`py -3.13` on Windows.
 
 ## Write your code
 
