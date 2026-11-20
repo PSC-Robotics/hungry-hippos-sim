@@ -1,0 +1,6 @@
+# The Python packages the simulated robot needs. setup.py installs these into the
+# simulator's own Python environment (the venv folder), so they don't affect your other
+# Python projects. Versions are chosen to work with Python 3.10 to 3.13.
+april_vision==3.0.0
+opencv-python-headless>=4.10,<5
+numpy>=2.2,<3

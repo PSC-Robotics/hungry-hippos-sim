@@ -6,3 +6,5 @@ worlds/.*.wbproj
 worlds/.*.jpg
 # Your own Python path for Webots, if you need one (see the README)
 controllers/psc_robot/runtime.ini
+# The simulator's Python environment, made by setup.py
+venv/
