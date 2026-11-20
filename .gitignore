@@ -1,0 +1,8 @@
+.DS_Store
+__pycache__/
+*.pyc
+# Webots saves its window layout and a thumbnail next to the world
+worlds/.*.wbproj
+worlds/.*.jpg
+# Your own Python path for Webots, if you need one (see the README)
+controllers/psc_robot/runtime.ini

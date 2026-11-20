@@ -1,0 +1,248 @@
+#VRML_SIM R2025a utf8
+# A simple two wheeled robot with a two servo grabber, two LEDs, a buzzer, a camera and a flag mount.
+# Fits inside the 500mm starting cube (flag not counted, as per the rule book).
+# Footprint: 0.15m behind the axle to 0.30m ahead of it, 0.37m wide.
+PROTO SimpleRobot [
+  field SFVec3f    translation    0 0 0
+  field SFRotation rotation       0 0 1 0
+  field SFString   name           "robot"
+  field SFString   controller     "psc_robot"
+  field MFString   controllerArgs [ "0" ]
+  field SFColor    flagColor      0.96 0.83 0.24
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    controller IS controller
+    controllerArgs IS controllerArgs
+    children [
+      # Chassis
+      Pose {
+        translation 0 0 0.08
+        children [
+          Shape {
+            appearance PBRAppearance { baseColor 0.2 0.25 0.3 roughness 0.6 metalness 0 }
+            geometry Box { size 0.3 0.3 0.1 }
+          }
+        ]
+      }
+      # Grabber jaw, left: a servo turns it about a vertical hinge at the chassis front.
+      # Position 0 points straight ahead; positive angles open it outwards.
+      HingeJoint {
+        jointParameters HingeJointParameters { axis 0 0 1 anchor 0.155 0.13 0.05 }
+        device [
+          RotationalMotor {
+            name "grabber left servo"
+            maxVelocity 6
+            maxTorque 2
+            minPosition -0.75
+            maxPosition 0.75
+          }
+          PositionSensor { name "grabber left servo sensor" }
+        ]
+        endPoint Solid {
+          translation 0.155 0.13 0.05
+          name "grabber left jaw"
+          children [
+            Pose {
+              translation 0.0875 0 0
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.85 0.45 0.1 roughness 0.6 metalness 0 }
+                  geometry Box { size 0.175 0.012 0.06 }
+                }
+              ]
+            }
+          ]
+          boundingObject Pose {
+            translation 0.0875 0 0
+            children [ Box { size 0.175 0.012 0.06 } ]
+          }
+          physics Physics { density -1 mass 0.05 }
+        }
+      }
+      # Grabber jaw, right: a servo turns it about a vertical hinge at the chassis front.
+      # Position 0 points straight ahead; negative angles open it outwards.
+      HingeJoint {
+        jointParameters HingeJointParameters { axis 0 0 1 anchor 0.155 -0.13 0.05 }
+        device [
+          RotationalMotor {
+            name "grabber right servo"
+            maxVelocity 6
+            maxTorque 2
+            minPosition -0.75
+            maxPosition 0.75
+          }
+          PositionSensor { name "grabber right servo sensor" }
+        ]
+        endPoint Solid {
+          translation 0.155 -0.13 0.05
+          name "grabber right jaw"
+          children [
+            Pose {
+              translation 0.0875 0 0
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.85 0.45 0.1 roughness 0.6 metalness 0 }
+                  geometry Box { size 0.175 0.012 0.06 }
+                }
+              ]
+            }
+          ]
+          boundingObject Pose {
+            translation 0.0875 0 0
+            children [ Box { size 0.175 0.012 0.06 } ]
+          }
+          physics Physics { density -1 mass 0.05 }
+        }
+      }
+      # The brain board's two WS2812 LEDs, on top of the chassis: the status LED and the
+      # LED robot code controls (robot.brain.led). RGB LEDs: set() takes 0xRRGGBB.
+      LED {
+        translation 0 0.04 0.135
+        name "status led"
+        gradual TRUE
+        color []
+        children [
+          Shape {
+            appearance PBRAppearance { baseColor 0.9 0.9 0.9 roughness 0.3 metalness 0 emissiveColor 0 0 0 }
+            geometry Cylinder { height 0.01 radius 0.012 }
+          }
+        ]
+      }
+      # The brain board's buzzer: robot.brain.buzzer.buzz() plays its tones here.
+      Speaker {
+        translation 0 0 0.135
+        name "buzzer"
+      }
+      LED {
+        translation 0 -0.04 0.135
+        name "led"
+        gradual TRUE
+        color []
+        children [
+          Shape {
+            appearance PBRAppearance { baseColor 0.9 0.9 0.9 roughness 0.3 metalness 0 emissiveColor 0 0 0 }
+            geometry Cylinder { height 0.01 radius 0.012 }
+          }
+        ]
+      }
+      # Wheels
+      HingeJoint {
+        jointParameters HingeJointParameters { axis 0 1 0 anchor 0 0.17 0.05 }
+        device [
+          RotationalMotor { name "left wheel motor" maxVelocity 15 maxTorque 3 }
+          PositionSensor { name "left wheel encoder" }
+        ]
+        endPoint Solid {
+          translation 0 0.17 0.05
+          rotation 1 0 0 1.5708
+          name "left wheel"
+          children [ DEF WHEEL Shape {
+            appearance PBRAppearance { baseColor 0.1 0.1 0.1 roughness 0.9 metalness 0 }
+            geometry Cylinder { height 0.03 radius 0.05 }
+          } ]
+          boundingObject Cylinder { height 0.03 radius 0.05 }
+          physics Physics { density -1 mass 0.1 }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters { axis 0 1 0 anchor 0 -0.17 0.05 }
+        device [
+          RotationalMotor { name "right wheel motor" maxVelocity 15 maxTorque 3 }
+          PositionSensor { name "right wheel encoder" }
+        ]
+        endPoint Solid {
+          translation 0 -0.17 0.05
+          rotation 1 0 0 1.5708
+          name "right wheel"
+          children [ USE WHEEL ]
+          boundingObject Cylinder { height 0.03 radius 0.05 }
+          physics Physics { density -1 mass 0.1 }
+        }
+      }
+      # Low friction casters, front and back
+      Solid {
+        translation 0.12 0 0.022
+        name "front caster"
+        contactMaterial "caster"
+        children [ DEF CASTER Shape {
+          appearance PBRAppearance { baseColor 0.7 0.7 0.7 roughness 0.3 metalness 0 }
+          geometry Sphere { radius 0.02 }
+        } ]
+        boundingObject Sphere { radius 0.02 }
+        physics Physics { density -1 mass 0.01 }
+      }
+      Solid {
+        translation -0.12 0 0.022
+        name "back caster"
+        contactMaterial "caster"
+        children [ USE CASTER ]
+        boundingObject Sphere { radius 0.02 }
+        physics Physics { density -1 mass 0.01 }
+      }
+      # Camera on a short mast
+      Pose {
+        translation 0.1 0 0.19
+        children [
+          Shape {
+            appearance PBRAppearance { baseColor 0.3 0.3 0.3 roughness 0.6 metalness 0 }
+            geometry Box { size 0.02 0.02 0.12 }
+          }
+        ]
+      }
+      Camera {
+        translation 0.1 0 0.26
+        name "camera"
+        fieldOfView 1.1
+        width 640
+        height 480
+        children [
+          Pose {
+            translation -0.01 0 0
+            children [
+              Shape {
+                appearance PBRAppearance { baseColor 0.05 0.05 0.05 roughness 0.4 metalness 0 }
+                geometry Box { size 0.03 0.05 0.03 }
+              }
+            ]
+          }
+        ]
+      }
+      # Flag mount and flag: 200mm pole of 15mm pipe, top 100mm carries a 150 x 100 panel
+      Pose {
+        translation -0.1 0 0.23
+        children [
+          Shape {
+            appearance PBRAppearance { baseColor 0.95 0.95 0.95 roughness 0.5 metalness 0 }
+            geometry Cylinder { height 0.2 radius 0.0075 }
+          }
+        ]
+      }
+      Pose {
+        translation -0.1825 0 0.28
+        children [
+          Shape {
+            appearance PBRAppearance { baseColor IS flagColor roughness 0.8 metalness 0 }
+            geometry Box { size 0.15 0.002 0.1 }
+          }
+        ]
+      }
+    ]
+    boundingObject Group {
+      children [
+        Pose {
+          translation 0 0 0.08
+          children [ Box { size 0.3 0.3 0.1 } ]
+        }
+      ]
+    }
+    physics Physics {
+      density -1
+      mass 3
+      centerOfMass [ 0 0 0.06 ]
+    }
+  }
+}

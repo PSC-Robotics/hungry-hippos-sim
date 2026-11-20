@@ -1,0 +1,5 @@
+{
+  "python.analysis.extraPaths": ["controllers/psc_robot"],
+  "python.analysis.typeCheckingMode": "off",
+  "files.exclude": { "**/__pycache__": true }
+}

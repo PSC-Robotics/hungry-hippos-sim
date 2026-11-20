@@ -1,0 +1,4 @@
+{
+  "extraPaths": ["controllers/psc_robot"],
+  "typeCheckingMode": "off"
+}
